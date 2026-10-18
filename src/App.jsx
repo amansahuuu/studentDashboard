@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { db } from "./Firebase";
+import { signOut } from "firebase/auth";
+import { auth, db } from "./Firebase";
 import "./App.css";
 import StudentInfo from "./StudentInfo";
 import DailyLogView from "./DailyLogView";
@@ -16,6 +17,8 @@ function App({ currentUser }) {
   const [showParentPrompt, setShowParentPrompt] = useState(false);
   const [parentPassword, setParentPassword] = useState("");
   const [parentPasswordError, setParentPasswordError] = useState("");
+  const [logoutError, setLogoutError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +108,18 @@ function App({ currentUser }) {
     }
   }
 
+  async function handleLogout() {
+    setLogoutError("");
+    setLoggingOut(true);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Could not sign out:", error);
+      setLogoutError("Could not log out. Please try again.");
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <main className="dashboard-container">
       <header className="dashboard-header">
@@ -117,30 +132,46 @@ function App({ currentUser }) {
             <h1>Learning, together</h1>
           </div>
         </div>
-        <div className="view-switch" role="group" aria-label="Choose dashboard view">
+        <div className="header-actions">
+          <div className="view-switch" role="group" aria-label="Choose dashboard view">
+            <button
+              type="button"
+              className={viewMode === "parent" ? "active" : ""}
+              aria-pressed={viewMode === "parent"}
+              onClick={() => {
+                if (viewMode !== "parent") {
+                  setShowParentPrompt(true);
+                  setParentPasswordError("");
+                }
+              }}
+            >
+              Parent view
+            </button>
+            <button
+              type="button"
+              className={viewMode === "child" ? "active" : ""}
+              aria-pressed={viewMode === "child"}
+              onClick={() => setViewMode("child")}
+            >
+              Child view
+            </button>
+          </div>
           <button
             type="button"
-            className={viewMode === "parent" ? "active" : ""}
-            aria-pressed={viewMode === "parent"}
-            onClick={() => {
-              if (viewMode !== "parent") {
-                setShowParentPrompt(true);
-                setParentPasswordError("");
-              }
-            }}
+            className="logout-button"
+            onClick={handleLogout}
+            disabled={loggingOut}
           >
-            Parent view
-          </button>
-          <button
-            type="button"
-            className={viewMode === "child" ? "active" : ""}
-            aria-pressed={viewMode === "child"}
-            onClick={() => setViewMode("child")}
-          >
-            Child view
+            {loggingOut ? "Logging out..." : "Log out"}
           </button>
         </div>
       </header>
+
+      {logoutError && (
+        <p className="logout-error" role="alert">
+          {logoutError}
+        </p>
+      )}
 
       {showParentPrompt && (
         <div

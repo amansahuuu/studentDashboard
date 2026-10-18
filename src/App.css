@@ -11,6 +11,12 @@
   margin-bottom: 24px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -53,6 +59,7 @@
 
 .view-switch {
   display: grid;
+  flex: 1;
   grid-template-columns: 1fr 1fr;
   width: 100%;
   padding: 4px;
@@ -78,6 +85,36 @@
   background: #fffaf4;
   box-shadow: 0 2px 8px rgb(68 43 25 / 10%);
   color: #8c432e;
+}
+
+.logout-button {
+  min-height: 44px;
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  border: 1px solid #dfcdbb;
+  border-radius: 12px;
+  background: #fffaf4;
+  color: #8c432e;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.logout-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.logout-button:focus-visible {
+  outline: 3px solid #d99b71;
+  outline-offset: 2px;
+}
+
+.logout-error {
+  margin: -8px 0 18px;
+  color: #9c3f2b;
+  font-size: 0.88rem;
 }
 
 .view-switch button:focus-visible,
@@ -323,6 +360,18 @@
   line-height: 1.6;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.extra-homework-content a {
+  color: #8c432e;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.extra-homework-content a:hover {
+  color: #5e2f20;
 }
 
 .extra-homework-due {
@@ -758,6 +807,7 @@
   .view-switch {
     width: auto;
     min-width: 250px;
+    flex: 0 0 auto;
   }
 
   .student-profile {

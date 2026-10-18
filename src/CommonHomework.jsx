@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./Firebase";
 
-const getGradeKey = (grade) => String(grade ?? "").trim().toLowerCase();
+const getGradeKey = (grade) =>
+  String(grade ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^(grade|class)\s*/, "");
 
 const toDate = (value) => {
   if (value instanceof Date) {
@@ -27,6 +31,30 @@ const formatDateTime = (date) =>
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+
+const renderContentWithLinks = (content) => {
+  const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  const parts = content.split(urlPattern);
+
+  return parts.map((part, index) => {
+    if (!/^https?:\/\/|^www\./i.test(part)) {
+      return <Fragment key={index}>{part}</Fragment>;
+    }
+
+    const trailingPunctuation = part.match(/[.,!?;:]+$/)?.[0] ?? "";
+    const url = part.slice(0, part.length - trailingPunctuation.length);
+    const href = /^www\./i.test(url) ? `https://${url}` : url;
+
+    return (
+      <Fragment key={index}>
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          {url}
+        </a>
+        {trailingPunctuation}
+      </Fragment>
+    );
+  });
+};
 
 export default function CommonHomework({ student, viewMode }) {
   const gradeKey = getGradeKey(student?.grade);
@@ -112,8 +140,8 @@ export default function CommonHomework({ student, viewMode }) {
   }
 
   const activeHomework = result.homework
-    .filter((item) => item.dueDate.getTime() >= currentTime)
-    .sort((first, second) => first.dueDate - second.dueDate);
+    .filter((item) => item.dueDate.getTime() > currentTime)
+    .sort((first, second) => first.dueDate.getTime() - second.dueDate.getTime());
 
   if (activeHomework.length === 0) {
     return null;
@@ -140,7 +168,11 @@ export default function CommonHomework({ student, viewMode }) {
         {activeHomework.map((item) => (
           <li key={item.id} className="extra-homework-item">
             <h3>{item.title || "Homework"}</h3>
-            {item.content && <p className="extra-homework-content">{item.content}</p>}
+            {item.content && (
+              <p className="extra-homework-content">
+                {renderContentWithLinks(item.content)}
+              </p>
+            )}
             <p className="extra-homework-due">
               Due {formatDateTime(item.dueDate)}
             </p>
